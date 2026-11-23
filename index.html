@@ -20,7 +20,7 @@ $("copy").onclick=async()=>{try{await navigator.clipboard.writeText(caption);$("
 const key="carmonela-progress-v1",goalKey="carmonela-goal-v1";
 function read(){try{const a=JSON.parse(localStorage.getItem(key)||"[]");return Array.isArray(a)?a.filter(x=>Number.isSafeInteger(x.count)&&x.count>=0&&typeof x.date==="string"):[]}catch{return []}}
 function store(a){try{localStorage.setItem(key,JSON.stringify(a));return true}catch{$("notice").textContent="Nu s-a putut salva în browser.";return false}}
-function valid(v,min=0){return /^\\d+$/.test(v)&&Number.isSafeInteger(Number(v))&&Number(v)>=min}
+function valid(v,min=0){return /^\d+$/.test(v)&&Number.isSafeInteger(Number(v))&&Number(v)>=min}
 function goal(){const n=Number(localStorage.getItem(goalKey));return Number.isSafeInteger(n)&&n>0?n:1000}
 function show(){
  const a=read(),current=a.length?a.at(-1).count:null,g=goal();
@@ -35,6 +35,6 @@ function show(){
 $("save").onclick=()=>{const v=$("count").value;if(!valid(v)){$("notice").textContent="Introdu numărul real de urmăritori (număr întreg).";return}const a=read();a.push({date:new Date().toISOString(),count:Number(v)});if(store(a)){$("notice").textContent="Valoare salvată.";show()}};
 $("correct").onclick=()=>{const a=read();if(!a.length){$("notice").textContent="Nu există înregistrări de corectat.";return}const value=prompt("Corectează ultima înregistrare:",String(a.at(-1).count));if(value===null)return;if(!valid(value)){$("notice").textContent="Număr invalid.";return}a[a.length-1].count=Number(value);if(store(a)){$("notice").textContent="Ultima înregistrare corectată.";show()}};
 $("savegoal").onclick=()=>{const v=$("goal").value;if(!valid(v,1)){$("notice").textContent="Obiectivul trebuie să fie un număr întreg pozitiv.";return}try{localStorage.setItem(goalKey,v);$("notice").textContent="Obiectiv salvat.";show()}catch{$("notice").textContent="Nu s-a putut salva obiectivul."}};
-$("export").onclick=()=>{const a=read();const csv="data,urmaritori\\n"+a.map(x=>x.date+","+x.count).join("\\n");const blob=new Blob([csv],{type:"text/csv;charset=utf-8"});const url=URL.createObjectURL(blob);const link=document.createElement("a");link.href=url;link.download="carmonela-progres.csv";link.click();setTimeout(()=>URL.revokeObjectURL(url),1000)};
+$("export").onclick=()=>{const a=read();const csv="data,urmaritori\n"+a.map(x=>x.date+","+x.count).join("\n");const blob=new Blob([csv],{type:"text/csv;charset=utf-8"});const url=URL.createObjectURL(blob);const link=document.createElement("a");link.href=url;link.download="carmonela-progres.csv";link.click();setTimeout(()=>URL.revokeObjectURL(url),1000)};
 refresh();show();
 </script></body></html>
