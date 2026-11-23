@@ -6,7 +6,7 @@ exports.handler = async (event) => {
   const redirect = "https://createfolow.netlify.app/.netlify/functions/tiktok-sandbox-callback";
   if (!key || !secret) return { statusCode: 503, body: "Lipsesc credentialele TikTok Sandbox." };
   const state = randomBytes(24).toString("hex");
-  const params = new URLSearchParams({ client_key: key, response_type: "code", scope: "user.info.basic", redirect_uri: redirect, state });
+  const params = new URLSearchParams({ client_key: key, response_type: "code", scope: "user.info.basic,video.upload", redirect_uri: redirect, state });
   return {
     statusCode: 302,
     headers: {
