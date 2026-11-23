@@ -166,6 +166,9 @@ $("auto-analyze").onclick=()=>{const ids=["auto-views","auto-likes","auto-commen
 autoPlan=autoRead();autoRender();
 
 
+const pilotProfile="@cristianweb.ro",pilotStart=11780,pilotStartDate="2026-11-23";
+function pilotSetup(){const ids=["learn-profile","auto-profile","growth-profile"];for(const id of ids){if($(id)&&!$(id).value)$(id).value=pilotProfile}if($("count")&&!$("count").value)$("count").placeholder="Start pilot: 11780";const banner=document.createElement("div");banner.className="learn-result";const strong=document.createElement("strong");strong.textContent="Pilot @cristianweb.ro · 23–29 noiembrie 2026";const p=document.createElement("p");p.textContent="Referință: 11.780 urmăritori (declarați de titular). Obiectiv experimental: 11.880. Înregistrează separat rezultatele fiecărui videoclip și compară după 7 zile.";banner.append(strong,p);$("learning-engine").insertBefore(banner,$("learning-engine").querySelector(".learn-fields"))}
+pilotSetup();
 const learnKey="vyralio-learning-v1";
 const learnLabels={tutorial:"Tutorial / sfat",story:"Poveste",challenge:"Provocare",qa:"Întrebări și răspunsuri",behind:"Din culise",live:"Anunț LIVE"};
 const learnSuggestions={tutorial:"Explică un sfat util în primele 3 secunde.",story:"Începe cu momentul cel mai interesant al poveștii.",challenge:"Propune o provocare originală, ușor de urmărit.",qa:"Răspunde clar unei întrebări reale a publicului.",behind:"Arată un proces autentic din culise.",live:"Anunță tema și ora unui LIVE planificat."};
