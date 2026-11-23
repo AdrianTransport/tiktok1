@@ -5,7 +5,7 @@
 <section class="hero"><h1>Creștere organică, pas cu pas.</h1><p>Plan zilnic, idei de videoclipuri și evidența progresului. Distribuie numai cu acord și în comunități care permit promovarea.</p><a class="button" href="https://www.tiktok.com/@carmonela" target="_blank" rel="noopener noreferrer">Deschide @carmonela</a></section>
 <div class="grid"><section class="card"><h2>📅 Ideea zilei</h2><p id="date"></p><p id="idea"></p><button id="next">Altă idee</button></section>
 <section class="card"><h2>📣 Text pentru distribuire</h2><p id="caption"></p><button id="copy">Copiază mesajul</button><p id="status" aria-live="polite"></p></section>
-<section class="card"><h2>📈 Urmăritori</h2><label for="count">Numărul actual de urmăritori (introdus manual)</label><input id="count" type="number" min="0" step="1" placeholder="Ex. 850"><button id="save">Salvează</button><output id="growth">—</output><small id="history">Datele rămân în acest browser.</small></section>
+<section class="card"><h2>📈 Urmăritori</h2><label for="count">Numărul actual de urmăritori (introdus manual)</label><input id="count" type="number" min="0" step="1" placeholder="Ex. 850"><button id="save">Salvează</button><button class="secondary" id="correct">Corectează ultima valoare</button><output id="growth">—</output><small id="history">Datele rămân în acest browser.</small><p id="notice" aria-live="polite"></p><label for="goal">Obiectiv de urmăritori</label><input id="goal" type="number" min="1" step="1" value="1000"><button class="secondary" id="savegoal">Salvează obiectivul</button><p id="target"></p><div style="height:10px;background:#303047;border-radius:10px;overflow:hidden"><div id="bar" style="height:100%;width:0;background:#ff477e"></div></div><h3>Istoric</h3><div id="entries"></div></section>
 <section class="card"><h2>✅ Plan de acțiune</h2><p>1. Pregătește un videoclip autentic.</p><p>2. Publică-l din contul titularului.</p><p>3. Răspunde la comentarii reale.</p><p>4. Distribuie linkul în locuri relevante, fără spam.</p><button class="secondary" id="export">Exportă progresul CSV</button></section></div>
 <footer>Acest instrument nu cumpără urmăritori, nu folosește boți și nu postează automat pe TikTok. Nu este afiliat cu TikTok.</footer>
 </main><script>
@@ -17,10 +17,24 @@ $("next").onclick=()=>{offset++;refresh()};
 const caption="Descoperă profilul lui Carmen! Povești și conversații autentice: https://www.tiktok.com/@carmonela ❤️";
 $("caption").textContent=caption;
 $("copy").onclick=async()=>{try{await navigator.clipboard.writeText(caption);$("status").textContent="Mesaj copiat."}catch{$("status").textContent="Selectează și copiază manual mesajul."}};
-const key="carmonela-progress-v1";
-function read(){try{const a=JSON.parse(localStorage.getItem(key)||"[]");return Array.isArray(a)?a.filter(x=>Number.isInteger(x.count)&&x.count>=0&&typeof x.date==="string"):[]}catch{return []}}
-function show(){const a=read();$("growth").textContent=a.length>1?((a.at(-1).count-a[0].count)>=0?"+":"")+(a.at(-1).count-a[0].count)+" urmăritori":"Încă nu există comparație";$("history").textContent=a.length?a.length+" înregistrări • Ultima: "+a.at(-1).count+" urmăritori":"Datele rămân în acest browser."}
-$("save").onclick=()=>{const v=$("count").value;if(!/^\d+$/.test(v)||!Number.isSafeInteger(Number(v))){$("history").textContent="Introdu un număr întreg valid.";return}const a=read();a.push({date:new Date().toISOString(),count:Number(v)});try{localStorage.setItem(key,JSON.stringify(a));show()}catch{$("history").textContent="Browserul nu permite salvarea locală."}};
-$("export").onclick=()=>{const a=read();const csv="data,urmaritori\n"+a.map(x=>x.date+","+x.count).join("\n");const blob=new Blob([csv],{type:"text/csv;charset=utf-8"});const url=URL.createObjectURL(blob);const link=document.createElement("a");link.href=url;link.download="carmonela-progres.csv";link.click();setTimeout(()=>URL.revokeObjectURL(url),1000)};
+const key="carmonela-progress-v1",goalKey="carmonela-goal-v1";
+function read(){try{const a=JSON.parse(localStorage.getItem(key)||"[]");return Array.isArray(a)?a.filter(x=>Number.isSafeInteger(x.count)&&x.count>=0&&typeof x.date==="string"):[]}catch{return []}}
+function store(a){try{localStorage.setItem(key,JSON.stringify(a));return true}catch{$("notice").textContent="Nu s-a putut salva în browser.";return false}}
+function valid(v,min=0){return /^\\d+$/.test(v)&&Number.isSafeInteger(Number(v))&&Number(v)>=min}
+function goal(){const n=Number(localStorage.getItem(goalKey));return Number.isSafeInteger(n)&&n>0?n:1000}
+function show(){
+ const a=read(),current=a.length?a.at(-1).count:null,g=goal();
+ $("goal").value=String(g);
+ $("growth").textContent=a.length>1?((current-a[0].count>=0?"+":"")+(current-a[0].count)+" urmăritori"):"Încă nu există comparație";
+ $("history").textContent=a.length?a.length+" înregistrări • Ultima: "+current+" urmăritori":"Datele rămân în acest browser.";
+ $("target").textContent=current===null?"Introdu numărul real de urmăritori pentru a vedea progresul.":current>=g?"Obiectiv atins! "+current+" / "+g+" urmăritori.":"Mai sunt "+(g-current)+" urmăritori până la obiectivul de "+g+".";
+ $("bar").style.width=(current===null?0:Math.min(100,current/g*100))+"%";
+ const entries=$("entries");entries.replaceChildren();
+ a.forEach((item,i)=>{const row=document.createElement("div");row.style.cssText="display:flex;gap:8px;justify-content:space-between;align-items:center;margin:8px 0;flex-wrap:wrap";const label=document.createElement("small");label.textContent=new Date(item.date).toLocaleString("ro-RO")+" — "+item.count;const edit=document.createElement("button");edit.className="secondary";edit.textContent="Editează";edit.onclick=()=>{const value=prompt("Corectează numărul de urmăritori:",String(item.count));if(value===null)return;if(!valid(value)){$("notice").textContent="Introdu un număr întreg valid.";return}const updated=read();if(!updated[i])return;updated[i].count=Number(value);if(store(updated)){$("notice").textContent="Înregistrare corectată.";show()}};const del=document.createElement("button");del.className="secondary";del.textContent="Șterge";del.onclick=()=>{if(!confirm("Ștergi această înregistrare?"))return;const updated=read();updated.splice(i,1);if(store(updated)){$("notice").textContent="Înregistrare ștearsă.";show()}};row.append(label,edit,del);entries.append(row)});
+}
+$("save").onclick=()=>{const v=$("count").value;if(!valid(v)){$("notice").textContent="Introdu numărul real de urmăritori (număr întreg).";return}const a=read();a.push({date:new Date().toISOString(),count:Number(v)});if(store(a)){$("notice").textContent="Valoare salvată.";show()}};
+$("correct").onclick=()=>{const a=read();if(!a.length){$("notice").textContent="Nu există înregistrări de corectat.";return}const value=prompt("Corectează ultima înregistrare:",String(a.at(-1).count));if(value===null)return;if(!valid(value)){$("notice").textContent="Număr invalid.";return}a[a.length-1].count=Number(value);if(store(a)){$("notice").textContent="Ultima înregistrare corectată.";show()}};
+$("savegoal").onclick=()=>{const v=$("goal").value;if(!valid(v,1)){$("notice").textContent="Obiectivul trebuie să fie un număr întreg pozitiv.";return}try{localStorage.setItem(goalKey,v);$("notice").textContent="Obiectiv salvat.";show()}catch{$("notice").textContent="Nu s-a putut salva obiectivul."}};
+$("export").onclick=()=>{const a=read();const csv="data,urmaritori\\n"+a.map(x=>x.date+","+x.count).join("\\n");const blob=new Blob([csv],{type:"text/csv;charset=utf-8"});const url=URL.createObjectURL(blob);const link=document.createElement("a");link.href=url;link.download="carmonela-progres.csv";link.click();setTimeout(()=>URL.revokeObjectURL(url),1000)};
 refresh();show();
 </script></body></html>
